@@ -16,8 +16,14 @@ public class AesEncryption : Encryption {
 //        val cipher: Cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING", "SunJCE")
         val cipher: Cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING", "BC")
         cipher.init(1, SecretKeySpec(key.toByteArray(), "AES"), IvParameterSpec(ivParamBytes))
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            encryptedValue = Base64.getEncoder().encodeToString(cipher.doFinal(toEncrypt.toByteArray()))
+        encryptedValue = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Base64.getEncoder()
+                .encodeToString(cipher.doFinal(toEncrypt.toByteArray()))
+        } else {
+            android.util.Base64.encodeToString(
+                cipher.doFinal(toEncrypt.toByteArray()),
+                android.util.Base64.DEFAULT
+            )
         }
         return encryptedValue
     }
@@ -28,8 +34,17 @@ public class AesEncryption : Encryption {
 //        val cipher: Cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING", "SunJCE")
         val cipher: Cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING", "BC")
         cipher.init(2, SecretKeySpec(key.toByteArray(), "AES"), IvParameterSpec(ivParamBytes))
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            decryptedValue = String(cipher.doFinal(Base64.getDecoder().decode(toDecrypt)))
+        decryptedValue = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            String(cipher.doFinal(Base64.getDecoder().decode(toDecrypt)))
+        } else {
+            String(
+                cipher.doFinal(
+                    android.util.Base64.decode(
+                        toDecrypt,
+                        android.util.Base64.DEFAULT
+                    )
+                )
+            )
         }
         return decryptedValue
     }
